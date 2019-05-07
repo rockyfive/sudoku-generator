@@ -1,16 +1,20 @@
 # Sudoku generator 2015
 
-import sudoku_solver as solver
+from sudoku_solver import solve
+from sudoku import Sudoku
 import random
 import time
 
 HINT_NUMBER = 28
 
-def initialize():
-    sudoku = solver.Sudoku()
+EXTRA_HINTS = 2
+
+def initialize_random_sudoku():
+    sudoku = Sudoku()
     box_list = list(sudoku.sudoku_list)
     random.shuffle(box_list)
-    hints = range(1, 10)
+
+    hints = list(range(1, 10))
     hints.pop(random.randrange(9))
     box = 0
     for number in range(HINT_NUMBER - 8):
@@ -19,24 +23,24 @@ def initialize():
     random.shuffle(hints)
     
     while hints and (box < len(box_list)):
-        if (box_list[box].options > 1) and hints[0] in box_list[box].options:
+        if (len(box_list[box].options) > 1) and hints[0] in box_list[box].options:
             sudoku.play_idx(hints.pop(0), box_list[box].idx)
 
         box += 1
         
     return sudoku
 
-def generate(extra_hints = 2):    
-    new_sudoku = initialize()
+def generate(hints = HINT_NUMBER, extra_hints = EXTRA_HINTS):    
+    new_sudoku = initialize_random_sudoku()
     hints = extra_hints
-    check_sudoku = solver.check(new_sudoku.clone())
+    check_sudoku = solve(new_sudoku.clone(), True)
     while check_sudoku and (check_sudoku != "Timeout"):
         if type(check_sudoku) == tuple:
             if not hints:
                 return generate(extra_hints)
                 
             new_sudoku.play_idx(check_sudoku[0], check_sudoku[1])
-            check_sudoku = solver.check(new_sudoku.clone())
+            check_sudoku = solve(new_sudoku.clone(), True)
             hints -= 1
             continue
         return new_sudoku
@@ -44,22 +48,21 @@ def generate(extra_hints = 2):
     return generate(extra_hints)
 
 
-def print_new_sudoku(format, hint_limit, solution=False):  
-    initial_time = time.time()
-    generated_sudoku = generate(hint_limit)
-    print "Sudoku founded:"
-    if format == "string":
-        sudoku_str = ""
-        for row in generated_sudoku.get_sudoku():
-            for number in row:
-                sudoku_str += str(number)
-        print sudoku_str
-    elif format == "draw":
-        print generated_sudoku
+def print_new_sudoku(format="string", hints = HINT_NUMBER, logfile="generated_sudokus.txt", solution=False):  
+
+    generated_sudoku = generate(hints)
+
+    if logfile:
+        generated_sudoku.log_sudoku(logfile)
+
+    print("Sudoku found:")
+    if not format or format == "string":
+        print(generated_sudoku.get_number_string())
+
+    if not format or format == "grid":
+        print(generated_sudoku)
     if solution:
-        print solver.solution(generated_sudoku)
-    print "Time elapsed in seconds:", time.time() - initial_time
-        
-     
-print_new_sudoku("draw", 2, True)
+        print(solve(generated_sudoku))
+
+
 
