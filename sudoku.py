@@ -1,18 +1,20 @@
 class Sudoku:
     """ Class that represents the sudoku. """
-    def __init__(self, sudoku=None, empty_value="0"):
-        self.sudoku_grid = [[Box(self, row, col) for col in range(9)] for row in range(9)]
+    def __init__(self, sudoku=None, empty_value="0", grid_len = 9, block_len = 3):
+        self.grid_len = grid_len
+        self.block_len = block_len
+        self.sudoku_grid = [[Box(self, row, col) for col in range(grid_len)] for row in range(grid_len)]
         self.rows = [Section(row) for row in self.sudoku_grid]
-        self.cols = [Section([self.sudoku_grid[row][col] for row in range(9)]) for col in range(9)]
-        self.squares = [Section([self.sudoku_grid[((idx // 3) * 3) + (pos // 3)][((idx % 3) * 3) + (pos % 3)] for pos in range(9)])
-                        for idx in range(9)]
+        self.cols = [Section([self.sudoku_grid[row][col] for row in range(grid_len)]) for col in range(grid_len)]
+        self.squares = [Section([self.sudoku_grid[((idx // block_len) * block_len) + (pos // block_len)][((idx % block_len) * block_len) + (pos % block_len)] for pos in range(grid_len)])
+                        for idx in range(grid_len)]
         self.sections = self.rows + self.cols + self.squares
-        self.sudoku_list = [self.sudoku_grid[row][col] for row in range(9) for col in range(9)]
-        self.empty_boxes = list(range(81))
+        self.sudoku_list = [self.sudoku_grid[row][col] for row in range(grid_len) for col in range(grid_len)]
+        self.empty_boxes = list(range(len(self.sudoku_list)))
 
         if type(sudoku) == list:
-            for row in range(9): 
-                for col in range(9):
+            for row in range(grid_len): 
+                for col in range(grid_len):
                     if sudoku[col][row]:
                         self.play_pos(sudoku[col][row], (col, row))
 
@@ -24,16 +26,19 @@ class Sudoku:
 
     def __str__(self):
         self.rep = "" # String representation saved here.
-        for row in range(9):
+        for row in range(self.grid_len):
             if not row % 3 and row:
                 self.rep += "------+-------+------\n"
             self.rep += self.rows[row].__str__()
             self.rep += "\n"
         return self.rep
+
+    def __len__(self):
+        return self.grid_len
     
     def get_sudoku(self):
         """ Returns a 2D array with the values. """
-        return [[self.sudoku_grid[row][col].value for col in range(9)] for row in range(9)]
+        return [[self.sudoku_grid[row][col].value for col in range(self.grid_len)] for row in range(self.grid_len)]
 
     def get_number_string(self):
         """ Returns the sudoku as a string of numbers. """
@@ -43,11 +48,11 @@ class Sudoku:
                 sudoku_str += str(number)
         return sudoku_str
     
-    def delete_obsolete_options(self, value, row, col, square):
+    def update_possible_values(self, value, row, col, square):
         """ This function is called when a number is played. """
-        self.rows[row].delete_obsolete_options(value)
-        self.cols[col].delete_obsolete_options(value)
-        self.squares[square].delete_obsolete_options(value)
+        self.rows[row].update_possible_values(value)
+        self.cols[col].update_possible_values(value)
+        self.squares[square].update_possible_values(value)
         
     def play_pos(self, value, pos):
         """ Plays value on the position. """
@@ -77,12 +82,12 @@ class Box:
     
     def __init__(self, sudoku, row, col):
         self.value = 0 # Actual value
-        self.options = [1, 2, 3, 4, 5, 6, 7, 8, 9] # Possible values
+        self.possible_values = list(range(1, sudoku.grid_len + 1))
         self.row = row
         self.col = col
-        self.square = (col // 3) + (row // 3) * 3
+        self.square = (col // sudoku.block_len) + (row // sudoku.block_len) * sudoku.block_len
         self.sudoku = sudoku 
-        self.idx = (col) + (row * 9) # index of the box.
+        self.idx = (col) + (row * sudoku.grid_len) 
       
     def __str__(self):
         if not self.value:
@@ -90,17 +95,17 @@ class Box:
         else:
             return str(self.value)
         
-    def delete_obsolete_options(self, number):
-        """ Delete a number from options list. """
-        if number in self.options:
-            self.options.remove(number)
+    def update_possible_values(self, number):
+        """ Delete a number from possible_values list. """
+        if number in self.possible_values:
+            self.possible_values.remove(number)
     
     def set_value(self, value):
         """ Changes the value of the box."""
         self.value = value 
-        self.options = [] 
+        self.possible_values = [] 
 
-        self.sudoku.delete_obsolete_options(value, self.row, self.col, self.square) 
+        self.sudoku.update_possible_values(value, self.row, self.col, self.square) 
  
         self.sudoku.empty_boxes.remove(self.idx)
         
@@ -129,7 +134,7 @@ class Section:
     def __init__(self, boxes):
         self.boxes = boxes # list of box objects contained in the section.
         # Dictionary with 1-9 numbers as keys and a list with possible boxes' index as value.
-        self.numbers = dict((key, [box.idx for box in self.boxes]) for key in range(1, 10))
+        self.numbers = dict((key, [box.idx for box in self.boxes]) for key in range(1, len(boxes) + 1))
     def __str__(self):
         self.rep = "" # String representation saved here.
         for box in self.boxes:
@@ -138,8 +143,8 @@ class Section:
             self.rep += box.__str__() + " "
         return self.rep
     
-    def delete_obsolete_options(self, value):
-        """ Delete a value on the options of the boxes of the section. """
+    def update_possible_values(self, value):
+        """ Delete a value on the possible_values of the boxes of the section. """
         self.numbers.pop(value, None)
         for box in self.boxes:
-            box.delete_obsolete_options(value)
+            box.update_possible_values(value)

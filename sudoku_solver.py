@@ -20,15 +20,15 @@ def solve(sudoku, check_unique_solution = False):
         if not sudoku.empty_boxes: # checks if all boxes are filled.
             return sudoku
 
-        next_play = find_box_with_less_options(sudoku)
+        next_play = find_box_with_less_possible_values(sudoku)
     
-        if next_play == 81:
+        if next_play == len(sudoku.sudoku_list):
             return False
-        # Now we iterate over the box's options we have chosen before
+        # Now we iterate over the box's possible_values we have chosen before
         # and try them in other instance of the sudoku in a recursive way.
         result = None
         solved = False
-        for option in sudoku.sudoku_list[next_play].options:
+        for option in sudoku.sudoku_list[next_play].possible_values:
 
             next_sudoku = sudoku.clone_and_play(option, next_play)
             solution = inner_solve(next_sudoku, start_time)
@@ -64,15 +64,15 @@ def fill_easy_positions(sudoku):
         sole_candidate(sudoku)
         sudoku_after = sudoku.get_sudoku()
 
-def find_box_with_less_options(sudoku):
+def find_box_with_less_possible_values(sudoku):
     """Iterates all boxes looking for 
-    the first box with less options available."""
-    result = 81
-    options_length = 10
+    the first box with less possible_values available."""
+    result = len(sudoku.sudoku_list)
+    min_length = 10
     for box in list(sudoku.sudoku_list): 
-        if box.options and len(box.options) < options_length:
+        if box.possible_values and len(box.possible_values) < min_length:
             result = box.idx
-            options_length = len(box.options)
+            min_length = len(box.possible_values)
     return result   
 
 def sole_candidate(sudoku):
@@ -82,8 +82,8 @@ def sole_candidate(sudoku):
     while state:
         state = 0
         for idx in sudoku.empty_boxes:
-            if len(sudoku.sudoku_list[idx].options) == 1:
-                sudoku.play_idx(sudoku.sudoku_list[idx].options[0], idx)
+            if len(sudoku.sudoku_list[idx].possible_values) == 1:
+                sudoku.play_idx(sudoku.sudoku_list[idx].possible_values[0], idx)
                 state = 1
                 
 def unique_candidate(sudoku):

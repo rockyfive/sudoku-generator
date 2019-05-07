@@ -23,7 +23,7 @@ def initialize_random_sudoku():
     random.shuffle(hints)
     
     while hints and (box < len(box_list)):
-        if (len(box_list[box].options) > 1) and hints[0] in box_list[box].options:
+        if (len(box_list[box].possible_values) > 1) and hints[0] in box_list[box].possible_values:
             sudoku.play_idx(hints.pop(0), box_list[box].idx)
 
         box += 1
@@ -49,7 +49,8 @@ def generate(hints = HINT_NUMBER, extra_hints = EXTRA_HINTS):
 
 
 def print_new_sudoku(format="string", hints = HINT_NUMBER, logfile="generated_sudokus.txt", solution=False):  
-
+    """Generates a new sudoku, logs it,
+     and prints it in string or grid format, and the solution if selected."""
     generated_sudoku = generate(hints)
 
     if logfile:
