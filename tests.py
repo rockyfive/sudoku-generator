@@ -58,7 +58,7 @@ def test_solve_many(file):
     for sudoku in f:
         
         count += 1
-        solver.solve(Sudoku(sudoku))
+        print(solver.solve(Sudoku(sudoku)))
     f.close()
 
 
@@ -66,10 +66,11 @@ def test_solve_many(file):
 initial_time = time()
 count = 0
 #test_solution(Sudoku(sudoku_grid_01))
+
 #test_solution(sudoku_02)
 #test_generate_many(5)
 
-#test_solve_many("generated_sudokus.txt")
+test_solve_many("generated_sudokus.txt")
 
 
 if count:

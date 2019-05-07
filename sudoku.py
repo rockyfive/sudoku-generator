@@ -1,6 +1,6 @@
 class Sudoku:
     """ Class that represents the sudoku. """
-    def __init__(self, sudoku=False, empty_value="0"):
+    def __init__(self, sudoku=None, empty_value="0"):
         self.sudoku_grid = [[Box(self, row, col) for col in range(9)] for row in range(9)]
         self.rows = [Section(row) for row in self.sudoku_grid]
         self.cols = [Section([self.sudoku_grid[row][col] for row in range(9)]) for col in range(9)]
@@ -8,7 +8,7 @@ class Sudoku:
                         for idx in range(9)]
         self.sections = self.rows + self.cols + self.squares
         self.sudoku_list = [self.sudoku_grid[row][col] for row in range(9) for col in range(9)]
-        self.index_list = list(range(81))
+        self.empty_boxes_list = list(range(81))
 
         if type(sudoku) == list:
             for row in range(9): 
@@ -17,7 +17,7 @@ class Sudoku:
                         self.play_pos(sudoku[col][row], (col, row))
 
         if type(sudoku) == str:
-            for index in self.index_list:
+            for index in self.empty_boxes_list:
                 if sudoku[index] != empty_value:
                     self.play_idx(sudoku[index], index)
 
@@ -43,11 +43,11 @@ class Sudoku:
                 sudoku_str += str(number)
         return sudoku_str
     
-    def delete(self, value, row, col, square):
+    def delete_obsolete_options(self, value, row, col, square):
         """ This function is called when a number is played. """
-        self.rows[row].delete(value)
-        self.cols[col].delete(value)
-        self.squares[square].delete(value)
+        self.rows[row].delete_obsolete_options(value)
+        self.cols[col].delete_obsolete_options(value)
+        self.squares[square].delete_obsolete_options(value)
         
     def play_pos(self, value, pos):
         """ Plays value on the position. """
@@ -90,7 +90,7 @@ class Box:
         else:
             return str(self.value)
         
-    def delete(self, number):
+    def delete_obsolete_options(self, number):
         """ Delete a number from options list. """
         if number in self.options:
             self.options.remove(number)
@@ -99,10 +99,10 @@ class Box:
         """ Changes the value of the box."""
         self.value = value 
         self.options = [] 
-        # Delete the value as option for other boxes on the same sections.
-        self.sudoku.delete(value, self.row, self.col, self.square) 
-        # Remove the box on the index list of free boxes.
-        self.sudoku.index_list.remove(self.idx)
+
+        self.sudoku.delete_obsolete_options(value, self.row, self.col, self.square) 
+ 
+        self.sudoku.empty_boxes_list.remove(self.idx)
         
         # With the next code is taken in account that
         # on the sections of the boxes that shares a section
@@ -138,8 +138,8 @@ class Section:
             self.rep += box.__str__() + " "
         return self.rep
     
-    def delete(self, value):
+    def delete_obsolete_options(self, value):
         """ Delete a value on the options of the boxes of the section. """
         self.numbers.pop(value, None)
         for box in self.boxes:
-            box.delete(value)
+            box.delete_obsolete_options(value)

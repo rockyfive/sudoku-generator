@@ -17,7 +17,7 @@ def solve(sudoku, check_unique_solution = False):
 
         fill_easy_positions(sudoku)
             
-        if not sudoku.index_list: # checks if all boxes are filled.
+        if not sudoku.empty_boxes_list: # checks if all boxes are filled.
             return sudoku
 
         next_play = find_box_with_less_options(sudoku)
@@ -81,7 +81,7 @@ def sole_candidate(sudoku):
     state = 1
     while state:
         state = 0
-        for idx in sudoku.index_list:
+        for idx in sudoku.empty_boxes_list:
             if len(sudoku.sudoku_list[idx].options) == 1:
                 sudoku.play_idx(sudoku.sudoku_list[idx].options[0], idx)
                 state = 1
