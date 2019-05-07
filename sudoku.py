@@ -8,7 +8,7 @@ class Sudoku:
                         for idx in range(9)]
         self.sections = self.rows + self.cols + self.squares
         self.sudoku_list = [self.sudoku_grid[row][col] for row in range(9) for col in range(9)]
-        self.empty_boxes_list = list(range(81))
+        self.empty_boxes = list(range(81))
 
         if type(sudoku) == list:
             for row in range(9): 
@@ -17,7 +17,7 @@ class Sudoku:
                         self.play_pos(sudoku[col][row], (col, row))
 
         if type(sudoku) == str:
-            for index in self.empty_boxes_list:
+            for index in self.empty_boxes:
                 if sudoku[index] != empty_value:
                     self.play_idx(sudoku[index], index)
 
@@ -102,7 +102,7 @@ class Box:
 
         self.sudoku.delete_obsolete_options(value, self.row, self.col, self.square) 
  
-        self.sudoku.empty_boxes_list.remove(self.idx)
+        self.sudoku.empty_boxes.remove(self.idx)
         
         # With the next code is taken in account that
         # on the sections of the boxes that shares a section
