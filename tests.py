@@ -45,10 +45,10 @@ def test_solution(sudoku):
 
 
 
-def test_generate():
+def test_generate(hints, extra_hints):
     print("Generating a sudoku...")
     initial_time = time()
-    generator.print_new_sudoku()
+    generator.print_new_sudoku("grid", hint_number=hints, extra_hints=extra_hints, solution=True)
     print_time(initial_time)
 
 
@@ -59,7 +59,7 @@ def test_generate_many(number):
     count = 0
     while count < number:
         count+=1
-        generator.print_new_sudoku(hints = 23)
+        generator.print_new_sudoku()
     print_count(number)
     print_time(initial_time)
 
@@ -69,7 +69,6 @@ def test_solve_many(file):
     count = 0
     f = open(file, "r")
     for sudoku in f:
-        
         count += 1
         solver.solve(Sudoku(sudoku))
     f.close()
@@ -85,9 +84,13 @@ def print_time(initial_time):
 
 # Launch tests
 
-test_solution(Sudoku(sudoku_grid_1))
+#print(Sudoku(sudoku_grid_2))
 
-test_solution(sudoku_string_1)
-test_generate_many(5)
+#test_solution(Sudoku(sudoku_grid_2))
+#test_solution(sudoku_string_1)
 
-test_solve_many("generated_sudokus.txt")
+#test_generate(27, 3)
+
+#test_generate_many(5)
+
+#test_solve_many("generated_sudokus.txt")

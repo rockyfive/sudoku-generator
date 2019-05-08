@@ -1,12 +1,13 @@
 class Sudoku:
     """ Class that represents the sudoku. """
-    def __init__(self, sudoku=None, empty_value="0", grid_len = 9, block_len = 3):
+    def __init__(self, sudoku=None, empty_value="0", grid_len = 9, squares_len = 3):
         self.grid_len = grid_len
-        self.block_len = block_len
+        self.squares_len = squares_len
         self.sudoku_grid = [[Box(self, row, col) for col in range(grid_len)] for row in range(grid_len)]
         self.rows = [Section(row) for row in self.sudoku_grid]
         self.cols = [Section([self.sudoku_grid[row][col] for row in range(grid_len)]) for col in range(grid_len)]
-        self.squares = [Section([self.sudoku_grid[((idx // block_len) * block_len) + (pos // block_len)][((idx % block_len) * block_len) + (pos % block_len)] for pos in range(grid_len)])
+        self.squares = [Section([self.sudoku_grid[((idx // squares_len) * squares_len) + (pos // squares_len)]
+                        [((idx % squares_len) * squares_len) + (pos % squares_len)] for pos in range(grid_len)])
                         for idx in range(grid_len)]
         self.sections = self.rows + self.cols + self.squares
         self.sudoku_list = [self.sudoku_grid[row][col] for row in range(grid_len) for col in range(grid_len)]
@@ -85,7 +86,7 @@ class Box:
         self.possible_values = list(range(1, sudoku.grid_len + 1))
         self.row = row
         self.col = col
-        self.square = (col // sudoku.block_len) + (row // sudoku.block_len) * sudoku.block_len
+        self.square = (col // sudoku.squares_len) + (row // sudoku.squares_len) * sudoku.squares_len
         self.sudoku = sudoku 
         self.idx = (col) + (row * sudoku.grid_len) 
       
